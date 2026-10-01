@@ -57,7 +57,7 @@ Use the `feature` label for implementation work and `test` for testing/CI work. 
 
 ## Tests
 
-The test command runs 11 tests with additional input cases. It checks schema defaults and rollback, title/status validation, the CRUD lifecycle, invalid requests, pagination, unique IDs, and sanitized database failures. Every database test gets a fresh in-memory database, cleaned up after the test. CI runs the same command on Python 3.11, 3.12, and 3.13.
+The test command runs 14 tests with additional input cases. It checks schema defaults and rollback, title/status validation, the CRUD lifecycle, invalid requests, pagination, unique IDs, and sanitized database failures. Every database test gets a fresh in-memory database, cleaned up after the test. CI runs the same command on Python 3.11, 3.12, and 3.13.
 
 ## Routes
 
@@ -85,7 +85,7 @@ All workstreams currently belong to @nate-park. A contributor should claim the r
 ### #2 Shared validation
 - [ ] Create/update validation trims titles, rejects invalid inputs and unknown fields, and accepts all four statuses.
 - [ ] Empty updates and explicit nulls fail; omitted update fields remain unchanged.
-- [ ] Unicode and 1/200-character boundaries pass; validation does not mutate inputs.
+- [ ] Unicode and 1/200-character boundaries pass; lone surrogates and non-canonical UUIDs fail; validation does not mutate inputs.
 - Owner file: `src/shared/taskValidation.py`; tests: `ValidationTests`.
 
 ### #3 API

@@ -5,7 +5,7 @@ import unittest
 from uuid import UUID, uuid4
 from src.database import connect, migrate, rollback
 from src.api.tasks import API
-from src.shared.taskValidation import validate, Invalid, STATUSES
+from src.shared.taskValidation import validate, task_id, Invalid, STATUSES
 
 
 class ValidationTests(unittest.TestCase):
@@ -28,6 +28,30 @@ class ValidationTests(unittest.TestCase):
         for payload in [{}, {'title': None}, {'status': 'invalid'}]:
             with self.assertRaises(Invalid):
                 validate(payload, update=True)
+
+    def test_missing_title_and_lone_surrogates(self):
+        for value in [{'status': 'todo'}, {'title': 'bad \ud800'}, {'title': '\udfff'}]:
+            with self.subTest(value=value), self.assertRaises(Invalid) as caught:
+                validate(value)
+            self.assertIn('title', caught.exception.fields)
+        self.assertEqual(validate({'title': ' ' + 'x'*200 + '\t'})['title'], 'x'*200)
+
+    def test_update_omitted_fields_and_nulls(self):
+        self.assertEqual(validate({'title': ' New '}, update=True), {'title': 'New'})
+        self.assertEqual(validate({'status': 'done'}, update=True), {'status': 'done'})
+        with self.assertRaises(Invalid) as caught:
+            validate({'title': None, 'status': None, 'extra': 1}, update=True)
+        self.assertEqual(set(caught.exception.fields), {'title', 'status', 'extra'})
+
+    def test_task_id_parsing(self):
+        value = str(uuid4())
+        self.assertEqual(task_id(value), value)
+        self.assertEqual(task_id(value.upper()), value)
+        for bad in ['', 'not-a-uuid', value[:-1], value + '0', ' ' + value, value + '\n', '{' + value + '}',
+                    'urn:uuid:' + value, value.replace('-', ''), None, 42, b'x' * 16]:
+            with self.subTest(bad=bad), self.assertRaises(Invalid) as caught:
+                task_id(bad)
+            self.assertEqual(caught.exception.fields, {'id': 'Must be a UUID'})
 
 
 class DatabaseTests(unittest.TestCase):

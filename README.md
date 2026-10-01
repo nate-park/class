@@ -30,6 +30,22 @@ Invoke-RestMethod -Method Patch -Uri "http://127.0.0.1:8000/api/tasks/$($task.id
 Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8000/api/tasks/$($task.id)"
 ```
 
+## Transaction history GUI
+
+A desktop Tkinter app (standard library only) for browsing and filtering transaction history.
+
+```sh
+python -m src.transactions.gui                 # opens with 250 generated sample transactions
+python -m src.transactions.gui my_history.csv  # or load your own CSV
+```
+
+- **Filter** by text (description or ID), date range with Last 7/30/90 days shortcuts, type (credit/debit), category (multi-select), and min/max amount. Results update as you type, and invalid inputs are flagged without clearing the table.
+- **Browse**: click column headers to sort, page through results (25–250 rows per page), and double-click a row for details.
+- **Summary bar** shows matching count, money in, money out, and net for the current filter.
+- **File menu**: open a CSV, export the filtered results to CSV, or reload sample data.
+
+CSV columns: `id,date,description,category,type,amount` (date as `YYYY-MM-DD`, type `credit` or `debit`, amount positive). Filtering, sorting, paging, and CSV logic live in `src/transactions/history.py` with no GUI dependency and are tested in `tests/test_transactions.py`; `src/transactions/gui.py` is the Tkinter view.
+
 ## Repository structure
 
 | Location | Purpose |
@@ -40,6 +56,9 @@ Invoke-RestMethod -Method Delete -Uri "http://127.0.0.1:8000/api/tasks/$($task.i
 | `src/database.py` | Database connections and migration helpers |
 | `db/migrations/` | Schema creation and disposable-database rollback |
 | `tests/test_tasks.py` | Validation, schema, and API integration tests |
+| `src/transactions/history.py` | Transaction filtering, sorting, paging, summaries, and CSV I/O |
+| `src/transactions/gui.py` | Tkinter transaction history GUI |
+| `tests/test_transactions.py` | Transaction filtering and CSV tests |
 | `.github/workflows/test.yml` | Automated tests on pushes and pull requests |
 
 ## Team workflow

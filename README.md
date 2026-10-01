@@ -64,7 +64,7 @@ The test command runs 14 tests with additional input cases. It checks schema def
 | Method | Route | Success |
 |---|---|---|
 | POST | /api/tasks | 201, task object |
-| GET | /api/tasks?limit=20&offset=0 | 200, `{ "tasks": [] }` |
+| GET | /api/tasks?limit=20&offset=0&status=todo | 200, `{ "tasks": [] }` (`status` is an optional filter) |
 | GET | /api/tasks/:id | 200, task object |
 | PATCH | /api/tasks/:id | 200, updated task |
 | DELETE | /api/tasks/:id | 204, empty body |

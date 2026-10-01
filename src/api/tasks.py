@@ -41,8 +41,8 @@ class API:
                 raise Invalid({'body': 'Invalid JSON or body size'}) from None
             values = validate(payload, update=method == 'PATCH')
         if collection and method == 'GET':
-            limit, offset = pagination(parse_qs(env.get('QUERY_STRING', ''), keep_blank_values=True))
-            rows = self.db.execute('SELECT * FROM tasks ORDER BY created_at, id LIMIT ? OFFSET ?', (limit, offset))
+            limit, offset, status = pagination(parse_qs(env.get('QUERY_STRING', ''), keep_blank_values=True))
+            rows = self.db.execute('SELECT * FROM tasks WHERE (? IS NULL OR status=?) ORDER BY created_at, id LIMIT ? OFFSET ?', (status, status, limit, offset))
             return 200, {'tasks': [dict(row) for row in rows]}
         if method == 'POST':
             identifier = str(uuid4())

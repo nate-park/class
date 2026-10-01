@@ -50,6 +50,9 @@ def pagination(query):
         if not lower <= number <= upper:
             raise Invalid({name: 'Out of range'})
         result.append(number)
-    if query.keys() - {'limit', 'offset'}:
+    if query.keys() - {'limit', 'offset', 'status'}:
         raise Invalid({'query': 'Unknown query parameter'})
-    return result
+    status = query.get('status', [None])
+    if len(status) != 1 or (status[0] is not None and status[0] not in STATUSES):
+        raise Invalid({'status': 'Unsupported status'})
+    return [*result, status[0]]

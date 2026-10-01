@@ -107,6 +107,16 @@ class APITests(unittest.TestCase):
         for query in ['limit=0', 'limit=101', 'offset=-1', 'limit=x', 'limit=', 'limit=1&limit=2', 'extra=1', 'offset='+('9'*30)]:
             self.assertEqual(self.request('GET', query=query)[0], 400)
 
+    def test_status_filter(self):
+        _, a = self.request('POST', data={'title': 'a'})
+        _, b = self.request('POST', data={'title': 'b'})
+        self.request('PATCH', '/api/tasks/' + b['id'], {'status': 'done'})
+        self.assertEqual([t['id'] for t in self.request('GET', query='status=todo')[1]['tasks']], [a['id']])
+        self.assertEqual([t['id'] for t in self.request('GET', query='status=done')[1]['tasks']], [b['id']])
+        self.assertEqual(len(self.request('GET')[1]['tasks']), 2)
+        for query in ['status=bad', 'status=', 'status=todo&status=done']:
+            self.assertEqual(self.request('GET', query=query)[0], 400)
+
     def test_database_failure_is_sanitized_and_atomic(self):
         self.db.execute("CREATE TRIGGER fail_insert AFTER INSERT ON tasks BEGIN SELECT RAISE(ABORT, 'secret database detail'); END")
         self.assertEqual(self.request('POST', data={'title': 'x'}), (500, {'error': {'code': 'internal_error'}}))

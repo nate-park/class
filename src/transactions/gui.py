@@ -280,8 +280,13 @@ class TransactionHistoryApp(ttk.Frame):
 
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
+    if len(argv) > 1:
+        sys.exit('usage: python -m src.transactions.gui [transactions.csv]')
     if argv:
-        transactions, source = history.load_csv(argv[0]), argv[0]
+        try:
+            transactions, source = history.load_csv(argv[0]), argv[0]
+        except (OSError, ValueError) as error:
+            sys.exit(f'Could not load {argv[0]}: {error}')
     else:
         transactions, source = history.sample_transactions(), 'Sample data'
     root = tk.Tk()
